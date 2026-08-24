@@ -118,16 +118,13 @@ export async function setServings(
   const found = await store.findEntry(key, entryId);
   if (!found) return { ok: false, error: "ไม่พบรายการ" };
 
-  const food = findFood(found.foodId);
-  // เมนูอาจถูกถอดออกไปแล้ว — คิดจากค่าต่อเสิร์ฟที่บันทึกไว้เดิม
-  const perServing = food
-    ? { kcal: food.kcal, protein: food.protein, carbs: food.carbs, fat: food.fat }
-    : {
-        kcal: found.kcal / found.servings,
-        protein: found.protein / found.servings,
-        carbs: found.carbs / found.servings,
-        fat: found.fat / found.servings,
-      };
+  // ค่าที่บันทึกในรายการเป็นสำเนาถาวร จึงคิดต่อเสิร์ฟจากรายการเดิมเสมอ
+  const perServing = {
+    kcal: found.kcal / found.servings,
+    protein: found.protein / found.servings,
+    carbs: found.carbs / found.servings,
+    fat: found.fat / found.servings,
+  };
 
   const updated = await store.updateEntryServings(key, entryId, servings, {
     kcal: Math.round(perServing.kcal * servings),

@@ -85,10 +85,18 @@ export interface FoodEntryDoc {
 }
 
 /** รูปแบบวันที่ที่ยอมรับ */
-export const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+export const DATE_PATTERN = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/;
 
 export function isDateKey(value: unknown): value is string {
-  return typeof value === "string" && DATE_PATTERN.test(value);
+  if (typeof value !== "string" || !DATE_PATTERN.test(value)) return false;
+
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(5, 7));
+  const day = Number(value.slice(8, 10));
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  return day <= daysInMonth[month - 1];
 }
 
 export const SERVINGS_LIMIT = { min: 0.5, max: 20 } as const;
@@ -178,7 +186,7 @@ export const VALIDATORS = {
         _id: { bsonType: "objectId" },
         entryId: { bsonType: "string" },
         userKey: { bsonType: "string" },
-        date: { bsonType: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
+        date: { bsonType: "string", pattern: DATE_PATTERN.source },
         meal: { enum: ["breakfast", "lunch", "dinner", "snack"] },
         foodId: { bsonType: "string" },
         name: { bsonType: "string" },

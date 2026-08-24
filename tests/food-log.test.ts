@@ -22,6 +22,7 @@ mock.module("next/headers", () => ({
 
 let auth: typeof import("@/lib/auth");
 let log: typeof import("@/lib/food-log");
+let db: typeof import("@/lib/db/store");
 let workdir: string;
 let origin: string;
 
@@ -36,6 +37,7 @@ beforeAll(async () => {
 
   auth = await import("@/lib/auth");
   log = await import("@/lib/food-log");
+  db = await import("@/lib/db/store");
 
   await auth.registerUser(ALICE, "secret123");
   await auth.registerUser(BOB, "secret123");
@@ -294,6 +296,38 @@ describe("สิทธิ์การเข้าถึงข้อมูลข�
     expect((await log.removeEntry(mine.entryId)).ok).toBe(false);
     expect((await log.setServings(mine.entryId, 2)).ok).toBe(false);
     expect((await log.clearDay(DATE)).ok).toBe(false);
+  });
+});
+
+describe("immutable nutrition snapshots", () => {
+  test("recalculates from the stored snapshot while the food remains in the catalog", async () => {
+    await log.addEntry({
+      date: DATE,
+      meal: "lunch",
+      foodId: "khao-man-kai",
+      servings: 2,
+    });
+    const [entry] = await log.listDay(DATE);
+    const key = await auth.getSessionKey();
+
+    expect(key).not.toBeNull();
+    await db.getStore().updateEntryServings(key!, entry.entryId, 2, {
+      kcal: 1000,
+      protein: 50,
+      carbs: 100,
+      fat: 10,
+    });
+
+    expect((await log.setServings(entry.entryId, 3)).ok).toBe(true);
+
+    const [updated] = await log.listDay(DATE);
+    expect(updated).toMatchObject({
+      servings: 3,
+      kcal: 1500,
+      protein: 75,
+      carbs: 150,
+      fat: 15,
+    });
   });
 });
 

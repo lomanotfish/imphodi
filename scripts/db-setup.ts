@@ -12,9 +12,15 @@
  * เพราะไฟล์นั้นมี `import "server-only"` ซึ่งพังเมื่อรันนอก Next
  */
 
+import { randomUUID } from "node:crypto";
+
 import { MongoClient } from "mongodb";
 
 import { COLLECTIONS, INDEXES, VALIDATORS } from "../src/lib/db/schema";
+import {
+  assertValidatorRejects,
+  unverifiedIndexNames,
+} from "./db-setup-helpers";
 import { sanitizeMongoUri } from "./mongo-uri";
 
 const uri = process.env.MONGODB_URI;
@@ -109,14 +115,25 @@ for (const [name, specs] of Object.entries(INDEXES)) {
       });
       console.log(`✓ index ${name}.${spec.name}`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = sanitizeMongoUri(
+        error instanceof Error ? error.message : String(error),
+      );
       // 85/86 = มี index ชื่อเดิมแต่ spec ต่าง ต้องลบก่อนสร้างใหม่
       console.error(`✗ index ${name}.${spec.name}: ${message}`);
       console.error(
         `  ถ้าเคยสร้างด้วย spec อื่นไว้ ให้ลบทิ้งก่อน: db.${name}.dropIndex("${spec.name}")`,
       );
+      throw new Error(`Failed to create required index ${name}.${spec.name}`);
     }
   }
+
+  const unverified = unverifiedIndexNames(specs, await collection.indexes());
+  if (unverified.length > 0) {
+    throw new Error(
+      `Required index verification failed for ${name}: ${unverified.join(", ")}`,
+    );
+  }
+  console.log(`OK verified ${specs.length} required index(es) on ${name}`);
 }
 
 /* -------------------------------------------------------- 3. ตรวจของจริง */
@@ -141,27 +158,25 @@ for (const name of Object.values(COLLECTIONS)) {
 
 console.log("\n─── ทดสอบ validator ───");
 
-try {
-  await db.collection(COLLECTIONS.foodEntries).insertOne({
-    // ตั้งใจให้ผิด: date ผิดรูปแบบ และ meal ไม่มีในรายการ
-    entryId: "validator-probe",
-    userKey: "validator-probe",
-    date: "not-a-date",
-    meal: "brunch",
-    foodId: "x",
-    name: "x",
-    servings: 1,
-    kcal: 1,
-  } as never);
+const probeId = `validator-probe-${randomUUID()}`;
+const probeCollection = db.collection(COLLECTIONS.foodEntries);
 
-  // ถ้าใส่เข้าได้ แปลว่า validator ไม่ทำงาน ต้องลบทิ้งแล้วเตือน
-  await db
-    .collection(COLLECTIONS.foodEntries)
-    .deleteOne({ entryId: "validator-probe" });
-  console.log("⚠ validator ไม่ได้กันข้อมูลผิดรูป — ตรวจ VALIDATORS ใน schema.ts");
-} catch {
-  console.log("✓ validator กันข้อมูลผิดรูปได้จริง");
-}
+await assertValidatorRejects(
+  () =>
+    probeCollection.insertOne({
+      // ตั้งใจให้ผิด: date ผิดรูปแบบ และ meal ไม่มีในรายการ
+      entryId: probeId,
+      userKey: probeId,
+      date: "not-a-date",
+      meal: "brunch",
+      foodId: "x",
+      name: "x",
+      servings: 1,
+      kcal: 1,
+    } as never),
+  () => probeCollection.deleteMany({ entryId: probeId, userKey: probeId }),
+);
+console.log("✓ validator กันข้อมูลผิดรูปได้จริง");
 
 console.log("\nเสร็จแล้ว — ตั้ง MONGODB_URI บน Vercel ด้วยนะ\n");
 
