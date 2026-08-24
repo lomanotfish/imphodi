@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:setup": "bun run scripts/db-setup.ts",
+    "db:setup": "node --env-file=.env.local scripts/db-setup-runner.mjs",
     "typecheck": "tsc --noEmit",
     "verify": "bun run lint && bun run typecheck && bun test"
   },
@@ -33,6 +33,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
+    "jiti": "^2.7.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
