@@ -1,0 +1,318 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+  สีทุกตัวอ้างผ่านตัวแปร --brand-* / --ink-* / --cta-* ที่กำหนดต่อธีม
+  เปลี่ยนธีมด้วยการใส่ data-theme บน <html> เท่านั้น ไม่ต้องโหลด CSS ใหม่
+*/
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+
+  --color-warm: var(--accent-warm);
+  --color-cool: var(--accent-cool);
+  --color-fresh: var(--accent-fresh);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+
+  --color-cta-from: var(--cta-from);
+  --color-cta-to: var(--cta-to);
+  --color-cta-ink: var(--cta-ink);
+
+  --color-mark-from: var(--mark-from);
+  --color-mark-to: var(--mark-to);
+  --color-mark-ink: var(--mark-ink);
+
+  --color-macro-protein: var(--macro-protein);
+  --color-macro-carbs: var(--macro-carbs);
+  --color-macro-fat: var(--macro-fat);
+
+  --animate-drift-a: drift-a 22s ease-in-out infinite;
+  --animate-drift-b: drift-b 26s ease-in-out infinite;
+  --animate-drift-c: drift-c 30s ease-in-out infinite;
+  --animate-float: float 5s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------- ธีม: ขาว ชมพู */
+:root,
+[data-theme="pink"] {
+  color-scheme: light;
+
+  --brand-50: #fff5f9;
+  --brand-100: #ffe8f1;
+  --brand-200: #ffd3e3;
+  --brand-300: #ffb3ce;
+  --brand-400: #ff8cb4;
+  --brand-500: #ff6699;
+  --brand-600: #f2447f;
+  --brand-700: #ce2c63;
+  --brand-800: #a61f4c;
+  --brand-900: #7d1638;
+
+  --background: #fffafc;
+  --cream: #fffbf7;
+  --ink: #4a3540;
+  --ink-soft: #7d6872;
+
+  --accent-warm: #ffd8c2;
+  --accent-cool: #e6dbff;
+  --accent-fresh: #c9f2df;
+
+  /* ปุ่มหลัก — พาสเทล + ตัวอักษรเข้ม เพื่อให้อ่านชัดผ่านเกณฑ์ AA */
+  --cta-from: #ffc2d8;
+  --cta-to: #ff9dc0;
+  --cta-ink: #7d1638;
+  --cta-shadow: rgba(242, 68, 127, 0.45);
+
+  /* โลโก้และไอคอนที่เลือกอยู่ — คงสีสดไว้เป็นจุดเด่น (ไม่มีข้อความ) */
+  --mark-from: #ff8cb4;
+  --mark-to: #f2447f;
+  --mark-ink: #ffffff;
+
+  --macro-protein: #f2447f;
+  --macro-carbs: #c96829;
+  --macro-fat: #8a68d6;
+}
+
+/* ------------------------------------------------------------ ธีม: ขาว ฟ้า */
+[data-theme="blue"] {
+  --brand-50: #f2f9ff;
+  --brand-100: #e0f1ff;
+  --brand-200: #c4e4ff;
+  --brand-300: #96d0ff;
+  --brand-400: #5cb5fa;
+  --brand-500: #2f9bef;
+  --brand-600: #157fd6;
+  --brand-700: #0f65ad;
+  --brand-800: #0d5188;
+  --brand-900: #0b3d66;
+
+  --background: #f9fcff;
+  --cream: #f7fbff;
+  --ink: #2f4356;
+  --ink-soft: #586c7e;
+
+  --accent-warm: #ffe3bd;
+  --accent-cool: #d7e6ff;
+  --accent-fresh: #c2f0ea;
+
+  --cta-from: #c2e4ff;
+  --cta-to: #8ecdff;
+  --cta-ink: #0b3d66;
+  --cta-shadow: rgba(21, 127, 214, 0.4);
+
+  --mark-from: #5cb5fa;
+  --mark-to: #157fd6;
+  --mark-ink: #ffffff;
+
+  --macro-protein: #157fd6;
+  --macro-carbs: #c87317;
+  --macro-fat: #2f9a86;
+}
+
+/* -------------------------------------------------------- ธีม: ขาว เหลือง */
+[data-theme="yellow"] {
+  --brand-50: #fffbef;
+  --brand-100: #fff5d6;
+  --brand-200: #ffeaad;
+  --brand-300: #ffdb75;
+  --brand-400: #fcc63f;
+  --brand-500: #eda50c;
+  --brand-600: #c8830a;
+  --brand-700: #9c6608;
+  --brand-800: #7a5009;
+  --brand-900: #5a3b08;
+
+  --background: #fffdf7;
+  --cream: #fffcf2;
+  --ink: #4a4030;
+  --ink-soft: #7b7060;
+
+  --accent-warm: #ffdcc2;
+  --accent-cool: #e3e6ff;
+  --accent-fresh: #d6f0c2;
+
+  /* ธีมนี้เป็นต้นแบบของแนวทางนี้อยู่แล้ว — เหลืองอ่อนกับตัวอักษรน้ำตาลเข้ม */
+  --cta-from: #ffd257;
+  --cta-to: #f0a80e;
+  --cta-ink: #5a3d06;
+  --cta-shadow: rgba(240, 168, 14, 0.5);
+
+  /* โลโก้เหลืองใช้ตัวอักษรเข้มด้วย เพราะขาวบนเหลืองอ่านไม่ชัด */
+  --mark-from: #fcc63f;
+  --mark-to: #d4900a;
+  --mark-ink: #5a3d06;
+
+  --macro-protein: #b0730a;
+  --macro-carbs: #3b84c8;
+  --macro-fat: #8465c4;
+}
+
+/* ค่าที่อิงจากธีม ใช้ร่วมกันทุกธีม */
+:root {
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --foreground: var(--ink);
+  --primary: var(--brand-500);
+  --primary-foreground: #ffffff;
+  --secondary: var(--brand-100);
+  --secondary-foreground: var(--brand-700);
+  --muted: var(--brand-50);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--brand-100);
+  --accent-foreground: var(--brand-700);
+  --destructive: #e5484d;
+  --border: var(--brand-100);
+  --input: var(--brand-100);
+  --ring: var(--brand-300);
+  --radius: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+    /* เปลี่ยนธีมแล้วสีไล่เข้าหากันแทนที่จะกระตุก */
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  ::selection {
+    background: var(--brand-200);
+    color: var(--brand-800);
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+/* เงาปุ่มหลัก อ้างสีจากธีมที่กำลังใช้ */
+@utility shadow-cta {
+  box-shadow: 0 12px 26px -10px var(--cta-shadow);
+}
+
+@utility shadow-cta-lg {
+  box-shadow: 0 16px 32px -10px var(--cta-shadow);
+}
+
+@utility shadow-soft {
+  box-shadow: 0 18px 48px -30px var(--cta-shadow);
+}
+
+@utility shadow-card {
+  box-shadow: 0 24px 60px -24px var(--cta-shadow);
+}
+
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6vw, 4vh, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-3vw, 7vh, 0) scale(0.95);
+  }
+}
+
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40% {
+    transform: translate3d(-7vw, 5vh, 0) scale(1.08);
+  }
+  70% {
+    transform: translate3d(4vw, -4vh, 0) scale(0.92);
+  }
+}
+
+@keyframes drift-c {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5vw, -6vh, 0) scale(1.15);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
