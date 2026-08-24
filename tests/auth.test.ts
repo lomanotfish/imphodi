@@ -57,6 +57,12 @@ const readStore = async () =>
   JSON.parse(await fs.readFile(path.join(workdir, "data", "db.json"), "utf8"));
 
 describe("สมัครสมาชิก", () => {
+  test("requires an eight-character password minimum", () => {
+    expect(auth.PASSWORD_RULE.min).toBe(8);
+    expect(auth.validatePassword("1234567")).toContain("8");
+    expect(auth.validatePassword("12345678")).toBeNull();
+  });
+
   test("สมัครด้วยชื่อไทยและรหัสที่ยาวพอ ผ่าน", async () => {
     const outcome = await auth.registerUser("มะลิ", "secret123");
 

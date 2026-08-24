@@ -39,7 +39,7 @@ const SESSION_DAYS = 30;
 const KEY_LENGTH = 64;
 
 export const NAME_RULE = { min: 2, max: 24 } as const;
-export const PASSWORD_RULE = { min: 6, max: 72 } as const;
+export const PASSWORD_RULE = { min: 8, max: 72 } as const;
 
 export interface PublicUser {
   name: string;
@@ -55,6 +55,10 @@ function loadSecret(): Promise<string> {
   secretPromise ??= (async () => {
     const fromEnv = process.env.AUTH_SECRET;
     if (fromEnv && fromEnv.length >= 32) return fromEnv;
+
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("AUTH_SECRET must be set in production");
+    }
 
     try {
       const saved = (await fs.readFile(SECRET_FILE, "utf8")).trim();
