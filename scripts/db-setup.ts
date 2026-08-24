@@ -15,6 +15,7 @@
 import { MongoClient } from "mongodb";
 
 import { COLLECTIONS, INDEXES, VALIDATORS } from "../src/lib/db/schema";
+import { sanitizeMongoUri } from "./mongo-uri";
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || "imphodi";
@@ -35,8 +36,8 @@ if (!uri) {
   process.exit(1);
 }
 
-// ปิดรหัสผ่านตอนพิมพ์ออกจอ กัน log หลุด
-const safeUri = uri.replace(/\/\/([^:]+):([^@]+)@/, "//$1:****@");
+// ปิด credentials ตอนพิมพ์ออกจอ กัน log หลุด
+const safeUri = sanitizeMongoUri(uri);
 console.log(`\nกำลังต่อ ${safeUri}`);
 console.log(`ฐานข้อมูล: ${dbName}\n`);
 
