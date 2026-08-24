@@ -1,4 +1,13 @@
-export const SECURITY_HEADERS = [
+type RuntimeEnvironment = "development" | "production" | "test";
+
+function cspForEnvironment(environment: RuntimeEnvironment) {
+  const unsafeEval = environment === "development" ? " 'unsafe-eval'" : "";
+
+  return `default-src 'self'; script-src 'self' 'unsafe-inline'${unsafeEval}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`;
+}
+
+export function securityHeadersForEnvironment(environment: RuntimeEnvironment) {
+  return [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
@@ -8,7 +17,11 @@ export const SECURITY_HEADERS = [
   { key: "X-Frame-Options", value: "DENY" },
   {
     key: "Content-Security-Policy",
-    value:
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests",
+      value: cspForEnvironment(environment),
   },
-] as const;
+  ] as const;
+}
+
+export const SECURITY_HEADERS = securityHeadersForEnvironment(
+  process.env.NODE_ENV,
+);

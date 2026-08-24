@@ -1,6 +1,17 @@
 import { expect, test } from "bun:test";
 
-import { SECURITY_HEADERS } from "@/lib/security-headers";
+import {
+  securityHeadersForEnvironment,
+  SECURITY_HEADERS,
+} from "@/lib/security-headers";
+
+function cspValue(environment: "development" | "production") {
+  const header = securityHeadersForEnvironment(environment).find(
+    (item) => item.key === "Content-Security-Policy",
+  );
+  expect(header).toBeDefined();
+  return header!.value;
+}
 
 test("sends baseline protection headers without broad CORS", () => {
   expect(SECURITY_HEADERS).toEqual(
@@ -19,4 +30,9 @@ test("sends baseline protection headers without broad CORS", () => {
       (header) => String(header.key) === "Access-Control-Allow-Origin",
     ),
   ).toBe(false);
+});
+
+test("allows React development eval without weakening production CSP", () => {
+  expect(cspValue("development")).toContain("'unsafe-eval'");
+  expect(cspValue("production")).not.toContain("'unsafe-eval'");
 });
