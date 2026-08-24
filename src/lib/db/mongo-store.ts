@@ -19,6 +19,7 @@ import {
   type FoodEntryDoc,
   type UserDoc,
 } from "./schema";
+import { configureMongoSrvDns } from "./mongo-dns";
 import type { DataStore } from "./store";
 
 /** เอกสารที่เก็บจริง — ตัด _id ออกเพราะ Mongo จัดการเอง */
@@ -47,6 +48,8 @@ function connect(): Promise<MongoClient> {
       "ไม่ได้ตั้ง MONGODB_URI — ดูวิธีตั้งค่าใน .env.example",
     );
   }
+
+  configureMongoSrvDns({ uri });
 
   globalForMongo.__imphodiMongo ??= new MongoClient(uri, {
     // กันคำขอค้างนานเกินไปบน serverless
