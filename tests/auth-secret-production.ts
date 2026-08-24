@@ -16,14 +16,15 @@ mock.module("next/headers", () => ({
   }),
 }));
 
-Object.assign(process.env, {
-  NODE_ENV: "production",
-  AUTH_SECRET: "too-short",
-});
-
 const auth = await import("@/lib/auth");
 
-test("rejects session signing with a short production auth secret", async () => {
+test("rejects session signing without a valid production auth secret", async () => {
+  if (process.env.AUTH_SECRET_CASE === "unset") {
+    expect(process.env.AUTH_SECRET).toBeUndefined();
+  } else {
+    expect(process.env.AUTH_SECRET).toBe("too-short");
+  }
+
   await expect(auth.startSession("tester")).rejects.toThrow(
     "AUTH_SECRET must be set in production",
   );
