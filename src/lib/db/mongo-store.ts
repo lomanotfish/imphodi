@@ -51,13 +51,26 @@ function connect(): Promise<MongoClient> {
 
   configureMongoSrvDns({ uri });
 
+  /**
+   * ห้ามเก็บ promise ที่ล้มไว้
+   *
+   * `??=` เฉย ๆ จะจำ promise ที่ reject ไว้ตลอดอายุ process ต่อให้สาเหตุ
+   * หายไปแล้วก็ยังคืน error เดิมทุกคำขอ (เคยเจอจริง: DNS ล่มชั่วคราวตอน
+   * dev server เพิ่งบูต แล้วต้องรีสตาร์ททั้งเซิร์ฟเวอร์ถึงจะหาย)
+   * เคลียร์ช่องทิ้งเมื่อล้ม คำขอถัดไปจะได้ลองต่อใหม่
+   */
   globalForMongo.__imphodiMongo ??= new MongoClient(uri, {
     // กันคำขอค้างนานเกินไปบน serverless
     serverSelectionTimeoutMS: 10_000,
     connectTimeoutMS: 10_000,
     maxPoolSize: 10,
     retryWrites: true,
-  }).connect();
+  })
+    .connect()
+    .catch((error: unknown) => {
+      globalForMongo.__imphodiMongo = undefined;
+      throw error;
+    });
 
   return globalForMongo.__imphodiMongo;
 }

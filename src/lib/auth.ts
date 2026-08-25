@@ -52,6 +52,8 @@ export interface PublicUser {
 let secretPromise: Promise<string> | null = null;
 
 function loadSecret(): Promise<string> {
+  // เคลียร์ช่องเมื่อล้ม ไม่ให้ promise ที่ reject ค้างอยู่ตลอดอายุ process
+  // (เช่นเขียน data/.secret ไม่ได้เพราะ filesystem อ่านได้อย่างเดียว)
   secretPromise ??= (async () => {
     const fromEnv = process.env.AUTH_SECRET;
     if (fromEnv && fromEnv.length >= 32) return fromEnv;
@@ -71,7 +73,10 @@ function loadSecret(): Promise<string> {
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(SECRET_FILE, generated, "utf8");
     return generated;
-  })();
+  })().catch((error: unknown) => {
+    secretPromise = null;
+    throw error;
+  });
 
   return secretPromise;
 }

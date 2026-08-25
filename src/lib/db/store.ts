@@ -14,6 +14,7 @@ import path from "node:path";
 import { DEFAULT_THEME, type ThemeName } from "@/lib/theme";
 import type { Profile } from "@/lib/calories";
 import { COLLECTIONS, type FoodEntryDoc, type UserDoc } from "./schema";
+import { configureMongoSrvDns } from "./mongo-dns";
 
 export interface DataStore {
   findUser(nameKey: string): Promise<UserDoc | null>;
@@ -255,6 +256,17 @@ export function getStore(): DataStore {
   if (active) return active;
 
   if (process.env.MONGODB_URI) {
+    /**
+     * ต้องตั้ง DNS ก่อนโหลด driver
+     *
+     * static import ถูก hoist ขึ้นบนสุดของโมดูลเสมอ ดังนั้นถ้าเรียก
+     * configureMongoSrvDns() ข้างใน mongo-store.ts มันจะทำงาน "หลัง"
+     * `mongodb` ถูกโหลดไปแล้ว ซึ่งสายเกินไปถ้า driver จับค่า resolver
+     * ตอนโหลดโมดูล — อาการคือ querySrv ECONNREFUSED ทั้งที่ resolveSrv
+     * ของเราเองทำงานได้ (เจอจริงบน Windows ที่ DNS ระบบชี้ 127.0.0.1)
+     */
+    configureMongoSrvDns();
+
     // require แบบ lazy เพื่อไม่ให้ driver ถูกโหลดตอนที่ไม่ได้ใช้
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { mongoStore } = require("./mongo-store") as {
