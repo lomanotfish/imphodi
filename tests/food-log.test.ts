@@ -156,6 +156,24 @@ describe("เพิ่มรายการอาหาร", () => {
     expect(await log.listDay(DATE)).toHaveLength(0);
   });
 
+  /**
+   * server action คือ HTTP endpoint สาธารณะ ผู้โจมตีส่ง argument อะไรก็ได้
+   * type ของ TypeScript ถูกลบตอน runtime จึงกันอะไรไม่ได้
+   * ถ้าอ่านฟิลด์ก่อนเช็คว่าเป็น object จะได้ TypeError กลายเป็น 500 หลุดออกไป
+   */
+  test("payload ที่ไม่ใช่ object ต้องได้ข้อความบอก ไม่ใช่ throw เป็น 500", async () => {
+    const junk = [null, undefined, 0, 42, "x", true, [], [1, 2, 3], NaN];
+
+    for (const payload of junk) {
+      const outcome = await log.addEntry(payload);
+      expect(outcome.ok).toBe(false);
+    }
+
+    // object ที่ไม่มีฟิลด์เลยก็ต้องไม่ throw
+    expect((await log.addEntry({})).ok).toBe(false);
+    expect(await log.listDay(DATE)).toHaveLength(0);
+  });
+
   test("รายการของวันอื่นไม่ปนกัน", async () => {
     await log.addEntry({ date: DATE, meal: "lunch", foodId: "banana", servings: 1 });
     await log.addEntry({

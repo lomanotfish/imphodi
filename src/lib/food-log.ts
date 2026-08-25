@@ -60,30 +60,40 @@ export async function listDay(date: string): Promise<LoggedEntry[]> {
   return docs.map(toPublic);
 }
 
-export async function addEntry(input: {
-  date: unknown;
-  meal: unknown;
-  foodId: unknown;
-  servings: unknown;
-}): Promise<Outcome> {
+export async function addEntry(input: unknown): Promise<Outcome> {
   const key = await getSessionKey();
   if (!key) return { ok: false, error: NO_SESSION };
 
-  if (!isDateKey(input.date)) return { ok: false, error: "วันที่ไม่ถูกต้อง" };
-  if (!isMealSlot(input.meal)) return { ok: false, error: "มื้อไม่ถูกต้อง" };
+  /**
+   * server action รับอะไรก็ได้จาก client — type ของ TypeScript ถูกลบตอน runtime
+   * ถ้าอ่านฟิลด์เลยโดยไม่เช็คก่อน ส่ง null หรือตัวเลขมาจะได้ TypeError
+   * กลายเป็น 500 หลุดออกไปแทนที่จะเป็นข้อความบอกผู้ใช้
+   */
+  if (typeof input !== "object" || input === null) {
+    return { ok: false, error: "ข้อมูลไม่ถูกต้อง" };
+  }
 
-  const servings = normalizeServings(input.servings);
+  const {
+    date,
+    meal,
+    foodId,
+    servings: rawServings,
+  } = input as Record<string, unknown>;
+
+  if (!isDateKey(date)) return { ok: false, error: "วันที่ไม่ถูกต้อง" };
+  if (!isMealSlot(meal)) return { ok: false, error: "มื้อไม่ถูกต้อง" };
+
+  const servings = normalizeServings(rawServings);
   if (servings === null) return { ok: false, error: "จำนวนไม่ถูกต้อง" };
 
-  const food =
-    typeof input.foodId === "string" ? findFood(input.foodId) : undefined;
+  const food = typeof foodId === "string" ? findFood(foodId) : undefined;
   if (!food) return { ok: false, error: "ไม่พบเมนูนี้" };
 
   await getStore().insertEntry({
     entryId: newId(),
     userKey: key,
-    date: input.date,
-    meal: input.meal,
+    date,
+    meal,
     foodId: food.id,
     // ถ่ายสำเนาไว้ ประวัติจะไม่เปลี่ยนถ้าแก้ข้อมูลเมนูในอนาคต
     name: food.name,
