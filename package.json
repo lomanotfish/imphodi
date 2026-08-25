@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:setup": "node --env-file=.env.local scripts/db-setup-runner.mjs",
     "typecheck": "tsc --noEmit",
-    "verify": "bun run lint && bun run typecheck && bun test"
+    "verify": "bun run lint && bun run typecheck && bun test",
+    "db:parity": "node --env-file=.env.local scripts/db-parity-runner.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

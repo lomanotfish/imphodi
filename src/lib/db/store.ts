@@ -74,7 +74,23 @@ interface FileShape {
   [COLLECTIONS.foodEntries]: FoodEntryDoc[];
 }
 
-const EMPTY: FileShape = { users: {}, foodEntries: [] };
+/**
+ * users ใช้ "ชื่อผู้ใช้" เป็นคีย์ ซึ่งผู้ใช้พิมพ์มาเอง
+ *
+ * ถ้าเก็บบน object ธรรมดา ชื่อ `__proto__` กับ `constructor` จะไปชน
+ * Object.prototype แล้วทำให้ค้นเจอทั้งที่ไม่มีผู้ใช้จริง
+ * (register บอกว่าชื่อซ้ำผิด ๆ และ login โยน TypeError เพราะ salt เป็น undefined)
+ *
+ * ใช้ prototype เป็น null จึงไม่มีคีย์ที่สืบทอดมาให้ชนตั้งแต่ต้น
+ * และเช็คด้วย Object.hasOwn ทุกครั้ง
+ */
+function emptyUsers(): Record<string, UserDoc> {
+  return Object.create(null) as Record<string, UserDoc>;
+}
+
+function emptyShape(): FileShape {
+  return { users: emptyUsers(), foodEntries: [] };
+}
 
 async function read(): Promise<FileShape> {
   try {
@@ -82,16 +98,23 @@ async function read(): Promise<FileShape> {
       | Partial<FileShape>
       | null;
 
-    if (!parsed || typeof parsed !== "object") return structuredClone(EMPTY);
+    if (!parsed || typeof parsed !== "object") return emptyShape();
+
+    // ย้ายเข้ากล่องไร้ prototype — JSON.parse คืน object ที่มี prototype ปกติ
+    const users = emptyUsers();
+    if (parsed.users && typeof parsed.users === "object") {
+      for (const [key, value] of Object.entries(parsed.users)) {
+        users[key] = value;
+      }
+    }
 
     return {
-      users:
-        parsed.users && typeof parsed.users === "object" ? parsed.users : {},
+      users,
       foodEntries: Array.isArray(parsed.foodEntries) ? parsed.foodEntries : [],
     };
   } catch {
     // ยังไม่มีไฟล์ หรือไฟล์เสีย — เริ่มจากฐานว่าง
-    return structuredClone(EMPTY);
+    return emptyShape();
   }
 }
 
@@ -113,13 +136,15 @@ function serialize<T>(task: () => Promise<T>): Promise<T> {
 
 export const fileStore: DataStore = {
   async findUser(nameKey) {
-    return (await read()).users[nameKey] ?? null;
+    const { users } = await read();
+    // hasOwn กัน key ที่สืบทอดมาจาก prototype
+    return Object.hasOwn(users, nameKey) ? users[nameKey] : null;
   },
 
   async insertUser(doc) {
     return serialize(async () => {
       const data = await read();
-      if (data.users[doc.nameKey]) return false;
+      if (Object.hasOwn(data.users, doc.nameKey)) return false;
 
       data.users[doc.nameKey] = doc;
       await write(data);
@@ -130,7 +155,9 @@ export const fileStore: DataStore = {
   async updateUser(nameKey, patch) {
     return serialize(async () => {
       const data = await read();
-      const user = data.users[nameKey];
+      const user = Object.hasOwn(data.users, nameKey)
+        ? data.users[nameKey]
+        : undefined;
       if (!user) return false;
 
       if ("profile" in patch) user.profile = patch.profile as Profile | null;
@@ -234,10 +261,24 @@ export function getStore(): DataStore {
       mongoStore: DataStore;
     };
     active = mongoStore;
-  } else {
-    active = fileStore;
+    return active;
   }
 
+  /**
+   * ล้มให้ดังตอนโปรดักชัน แบบเดียวกับ AUTH_SECRET
+   *
+   * ถ้าปล่อยให้ถอยไปใช้ไฟล์ JSON บน Vercel จะกลายเป็นพังแบบเงียบ ๆ:
+   * filesystem อ่านได้แต่เขียนไม่ได้ ผู้ใช้สมัครไม่ได้ บันทึกอะไรไม่ได้
+   * และข้อมูลที่เผลอลงไปได้ก็หายตอน instance ถูกรีไซเคิล
+   * แจ้งตอนเริ่มดีกว่าให้ผู้ใช้ไปเจอ error ตอนกดปุ่ม
+   */
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "MONGODB_URI must be set in production — the file store cannot persist on serverless",
+    );
+  }
+
+  active = fileStore;
   return active;
 }
 

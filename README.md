@@ -18,9 +18,28 @@ bun dev            # http://localhost:3000
 ```bash
 bun run build      # build production
 bun start          # รัน production
-bun run lint       # ESLint
-bun test           # ชุดทดสอบ (109 เทสต์)
+bun run verify     # lint + typecheck + เทสต์ทั้งชุด
+bun test           # ชุดทดสอบ (140 เทสต์)
+
+bun run db:setup   # สร้าง/อัปเดต collection + index + validator บน MongoDB
+bun run db:parity  # ยิง MongoDB จริง เทียบพฤติกรรมกับ fileStore (31 เคส)
 ```
+
+> `db:setup` และ `db:parity` รันด้วย **Node ไม่ใช่ Bun** เพราะ `bson` เรียก
+> `node:v8 isBuildingSnapshot` ที่ Bun ยังไม่รองรับ — script จัดการให้แล้ว
+
+## สำหรับ AI agent
+
+`CLAUDE.md` มีสรุปสิ่งที่เดาจากชื่อไฟล์ไม่ได้ กับกับดักที่เคยทำให้เกิดบั๊กจริง
+และมี skill/subagent เตรียมไว้ใน `.claude/`
+
+| งาน | skill |
+|---|---|
+| เพิ่ม/แก้เมนูอาหาร | `food-catalog` |
+| เพิ่ม/แก้ธีมสี หรือปัญหา contrast | `theme-add` |
+| แก้โครงสร้างข้อมูล / ชั้นเก็บข้อมูล | `db-change` |
+
+subagent: `api-security-reviewer` · `release-verifier` · `thai-ui-reviewer`
 
 ## ฟีเจอร์
 
