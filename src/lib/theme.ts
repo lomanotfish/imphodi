@@ -11,7 +11,7 @@ export const THEMES = [
 
 export type ThemeName = (typeof THEMES)[number]["name"];
 
-export const DEFAULT_THEME: ThemeName = "pink";
+export const DEFAULT_THEME: ThemeName = "yellow";
 export const THEME_COOKIE = "imphodi_theme";
 /** cookie ธีมอยู่ได้หนึ่งปี ไม่ใช่ข้อมูลอ่อนไหวจึงไม่ต้อง httpOnly */
 export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
